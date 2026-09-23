@@ -112,6 +112,13 @@ export function TenderTable({
                         <Pencil />
                       </button>
                     )}
+                    <Link
+                      href={`/tender-documents/${encodeURIComponent(t.id)}`}
+                      className="icon-action"
+                      title="View auto-filled bid documents"
+                    >
+                      <FileText />
+                    </Link>
                     {onDelete && (
                       <button
                         className="icon-action delete"

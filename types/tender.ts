@@ -23,6 +23,46 @@ export interface Tender {
   owner: string
   remarks?: string
   createdAt?: string
+  bid?: TenderBidDetails
+}
+
+export interface TenderPackage {
+  code: string
+  region: string
+  rfx: string
+  emdLakh: string
+}
+
+export interface BeneficiaryBank {
+  accountHolder: string
+  bankName: string
+  branch: string
+  accountNo: string
+  ifsc: string
+  accountType: string
+}
+
+// Tender-specific values that get printed into the generated bid documents.
+// Bidder (company) details are fixed and live in lib/company.ts.
+export interface TenderBidDetails {
+  rfsNo: string
+  rfsDate: string
+  corrigendum: string
+  workName: string
+  shortWorkName: string
+  authorityFullName: string
+  addresseeDesignation: string
+  authorityAddress: string
+  bidDeadlineTime: string
+  tenderFeePerPackage: string
+  bidValidityDays: string
+  financialRequirementCr: string
+  technicalRequirement: string
+  jurisdiction: string
+  signingDate: string
+  place: string
+  packages: TenderPackage[]
+  beneficiaryBank: BeneficiaryBank
 }
 
 export type MasterKey = 'states' | 'departments' | 'firms' | 'tenderTypes'
