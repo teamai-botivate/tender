@@ -20,6 +20,7 @@ export const emptyBid = (): TenderBidDetails => ({
   signingDate: new Date().toISOString().slice(0, 10),
   place: 'Anand',
   packages: [],
+  technicalComponents: [],
   beneficiaryBank: {
     accountHolder: '',
     bankName: '',
@@ -72,6 +73,17 @@ export const SAMPLE_TENDER: Tender = {
       { code: 'P-5', region: 'Rajnandgaon', rfx: '8100052833', emdLakh: '54' },
       { code: 'P-6', region: 'Raigarh', rfx: '8100052843', emdLakh: '88' },
       { code: 'P-7', region: 'Jagdalpur', rfx: '8100052844', emdLakh: '157' },
+    ],
+    technicalComponents: [
+      { item: 'Solar PV Module', make: 'Premier / Novasys / Alpex / Cosmic', compliance: 'IEC 61215/IS 14286; IEC 61730-1,2 (DCR, ALMM List-I; cells List-II) — Yes' },
+      { item: 'Module Mounting Structure', make: 'Varyaa / RBP', compliance: 'Hot-dip Galvanized MS (IS 2062 & IS 4759) — Yes' },
+      { item: 'Junction Box', make: 'RBP / Statcon', compliance: 'IP 65 & IEC 62208 — Yes' },
+      { item: 'DC Distribution Box (DCDB)', make: 'RBP / Statcon', compliance: 'IP 65 — Yes' },
+      { item: 'AC Distribution Box (ACDB)', make: 'RBP / Statcon', compliance: 'IEC/IS 60947 Part I,II,III; IP 65/54 — Yes' },
+      { item: 'PCU / Inverter', make: 'Statcon', compliance: 'IEC 61683/IS 61683; IEC 60068-2; QCO 30.08.2017 — Yes' },
+      { item: 'Cable', make: 'KEI / Polycab or Equivalent', compliance: 'IEC 60227/IS 694; IEC 60502/IS 1554 — Yes' },
+      { item: 'Net / Smart Meter', make: 'By CSPDCL', compliance: 'IS 16444 — Yes' },
+      { item: 'Civil Works', make: 'RBP', compliance: 'Relevant IS — Yes' },
     ],
     beneficiaryBank: {
       accountHolder: 'Manager (CAU), CSPDCL, Raipur (C.G.)',
@@ -206,6 +218,13 @@ export function buildDocData(tender: Tender) {
     place: or(bid.place),
     deadline: [formatDocDate(tender.due), bid.bidDeadlineTime.trim()].filter(Boolean).join(', '),
     bank: bid.beneficiaryBank,
+    technicalComponents: bid.technicalComponents.length
+      ? bid.technicalComponents.map(c => ({
+          item: or(c.item),
+          make: (c.make || '').trim() || BLANK,
+          compliance: (c.compliance || '').trim() || BLANK,
+        }))
+      : [{ item: BLANK, make: BLANK, compliance: BLANK }],
   }
 }
 
@@ -227,5 +246,6 @@ export function missingDocFields(tender: Tender): string[] {
   const missing = checks.filter(([, v]) => !v?.trim()).map(([label]) => label)
   if (!bid.packages.length) missing.push('At least one Package')
   if (bid.packages.some(p => !p.emdLakh.trim())) missing.push('EMD amount for every Package')
+  if (!bid.technicalComponents.length) missing.push('Technical Components (Format-12)')
   return missing
 }

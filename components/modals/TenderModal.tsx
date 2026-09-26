@@ -2,21 +2,10 @@
 
 import React, { useState } from 'react'
 import { ArrowRight, FileUp, Loader2, Plus, Sparkles, Trash2, X } from 'lucide-react'
-import { BeneficiaryBank, Masters, Stage, Status, Tender, TenderBidDetails, TenderPackage } from '@/types/tender'
+import { BeneficiaryBank, Masters, Stage, Status, Tender, TenderBidDetails, TenderPackage, TechnicalComponent } from '@/types/tender'
 import { stagesList } from '@/context/TenderContext'
 import { emptyBid } from '@/lib/tender-docs'
-
-// Shape returned by /api/extract-tender (null = not stated in the PDF)
-type Extracted = {
-  [K in
-    | 'title' | 'authority' | 'authorityFullName' | 'addresseeDesignation' | 'authorityAddress' | 'department'
-    | 'state' | 'estimatedValue' | 'rfsNo' | 'rfsDate' | 'corrigendum' | 'workName' | 'shortWorkName'
-    | 'bidDeadlineDate' | 'bidDeadlineTime' | 'tenderFeePerPackage' | 'bidValidityDays'
-    | 'financialRequirementCr' | 'technicalRequirement' | 'jurisdiction']: string | null
-} & {
-  packages: TenderPackage[]
-  beneficiaryBank: { [K in keyof BeneficiaryBank]: string | null }
-}
+import { TenderExtraction } from '@/lib/tender-extraction-schema'
 
 const isDate = (v: string | null): v is string => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v)
 
@@ -24,7 +13,7 @@ const isDate = (v: string | null): v is string => !!v && /^\d{4}-\d{2}-\d{2}$/.t
 const matchMaster = (value: string, list: string[]) =>
   list.find(item => item.toLowerCase() === value.toLowerCase()) ?? value
 
-function applyExtraction(form: Tender, x: Extracted, masters: Masters): { tender: Tender; filled: number } {
+function applyExtraction(form: Tender, x: TenderExtraction, masters: Masters): { tender: Tender; filled: number } {
   let filled = 0
   const pick = (value: string | null, current: string) => {
     const v = value?.trim()
@@ -50,6 +39,10 @@ function applyExtraction(form: Tender, x: Extracted, masters: Masters): { tender
   bid.jurisdiction = pick(x.jurisdiction, bid.jurisdiction)
   if (x.packages?.length) {
     bid.packages = x.packages.map(p => ({ code: p.code, region: p.region, rfx: p.rfx, emdLakh: p.emdLakh }))
+    filled++
+  }
+  if (x.technicalComponents?.length) {
+    bid.technicalComponents = x.technicalComponents.map(c => ({ item: c.item, make: c.make, compliance: c.compliance }))
     filled++
   }
   const bank = { ...bid.beneficiaryBank }
@@ -141,6 +134,15 @@ export function TenderModal({
   const removePackage = (index: number) =>
     setBid('packages', bid.packages.filter((_, i) => i !== index))
 
+  const setComponent = (index: number, key: keyof TechnicalComponent, value: string) =>
+    setBid('technicalComponents', bid.technicalComponents.map((c, i) => (i === index ? { ...c, [key]: value } : c)))
+
+  const addComponent = () =>
+    setBid('technicalComponents', [...bid.technicalComponents, { item: '', make: '', compliance: '' }])
+
+  const removeComponent = (index: number) =>
+    setBid('technicalComponents', bid.technicalComponents.filter((_, i) => i !== index))
+
   const [extracting, setExtracting] = useState(false)
   const [extractMessage, setExtractMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
 
@@ -154,7 +156,7 @@ export function TenderModal({
       const res = await fetch('/api/extract-tender', { method: 'POST', body })
       const json = await res.json().catch(() => ({}))
       if (!res.ok || !json.data) throw new Error(json.error || 'Could not read the PDF.')
-      const extracted = json.data as Extracted
+      const extracted = json.data as TenderExtraction
       const { filled } = applyExtraction(form, extracted, masters)
       setForm(prev => applyExtraction(prev, extracted, masters).tender)
       setExtractMessage({
@@ -485,6 +487,23 @@ export function TenderModal({
                   ))}
                   <button type="button" className="secondary-button text-xs self-start" onClick={addPackage}>
                     <Plus className="w-4 h-4" /> Add Package
+                  </button>
+                </div>
+
+                <div className="form-section-title">Technical Components (Format-12 — Makes & Compliance)</div>
+                <div className="full-col flex flex-col gap-2">
+                  {bid.technicalComponents.map((c, i) => (
+                    <div className="component-row" key={i}>
+                      <input value={c.item} onChange={e => setComponent(i, 'item', e.target.value)} placeholder="Item, e.g. Solar PV Module" />
+                      <input value={c.make} onChange={e => setComponent(i, 'make', e.target.value)} placeholder="Make(s) proposed" />
+                      <input value={c.compliance} onChange={e => setComponent(i, 'compliance', e.target.value)} placeholder="Compliance standard (IS/IEC)" />
+                      <button type="button" className="icon-action delete" title="Remove component" onClick={() => removeComponent(i)}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="secondary-button text-xs self-start" onClick={addComponent}>
+                    <Plus className="w-4 h-4" /> Add Component
                   </button>
                 </div>
 

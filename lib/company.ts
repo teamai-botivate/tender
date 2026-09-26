@@ -65,14 +65,6 @@ export const EXPERIENCE = {
   total: { sets: '18,383', mw: '36.766', gridSets: '12,905', gridMw: '25.81' },
 }
 
-export const PROPOSED_COMPONENTS = [
-  { item: 'Solar PV Module', make: 'Premier / Novasys / Alpex / Cosmic', compliance: 'IEC 61215/IS 14286; IEC 61730-1,2 (DCR, ALMM List-I; cells List-II) — Yes' },
-  { item: 'Module Mounting Structure', make: 'Varyaa / RBP', compliance: 'Hot-dip Galvanized MS (IS 2062 & IS 4759) — Yes' },
-  { item: 'Junction Box', make: 'RBP / Statcon', compliance: 'IP 65 & IEC 62208 — Yes' },
-  { item: 'DC Distribution Box (DCDB)', make: 'RBP / Statcon', compliance: 'IP 65 — Yes' },
-  { item: 'AC Distribution Box (ACDB)', make: 'RBP / Statcon', compliance: 'IEC/IS 60947 Part I,II,III; IP 65/54 — Yes' },
-  { item: 'PCU / Inverter', make: 'Statcon', compliance: 'IEC 61683/IS 61683; IEC 60068-2; QCO 30.08.2017 — Yes' },
-  { item: 'Cable', make: 'KEI / Polycab or Equivalent', compliance: 'IEC 60227/IS 694; IEC 60502/IS 1554 — Yes' },
-  { item: 'Net / Smart Meter', make: 'By {authority}', compliance: 'IS 16444 — Yes' },
-  { item: 'Civil Works', make: 'RBP', compliance: 'Relevant IS — Yes' },
-]
+// Note: the "Technical Details of Proposed Components" table (Format-12) varies
+// per tender's scope, so it lives on Tender.bid.technicalComponents instead of
+// here — see lib/tender-docs.ts (SAMPLE_TENDER) for the CSPDCL solar example.

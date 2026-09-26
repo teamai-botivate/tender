@@ -1134,6 +1134,17 @@ tr:last-child td {
   min-width: 0;
 }
 
+.component-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 32px;
+  gap: 8px;
+  align-items: center;
+}
+
+.component-row input {
+  min-width: 0;
+}
+
 .pdf-autofill {
   grid-column: 1 / -1;
   border: 1.5px dashed #93c5fd;
@@ -1146,7 +1157,8 @@ tr:last-child td {
 }
 
 @media (max-width: 720px) {
-  .package-row {
+  .package-row,
+  .component-row {
     grid-template-columns: 1fr 1fr;
   }
 }

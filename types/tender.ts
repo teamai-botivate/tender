@@ -42,6 +42,15 @@ export interface BeneficiaryBank {
   accountType: string
 }
 
+// A single row in the "Technical Details of Proposed Components" document —
+// varies per tender (different scope needs different equipment/standards), so
+// it is stored on the tender's bid details rather than fixed company data.
+export interface TechnicalComponent {
+  item: string
+  make: string
+  compliance: string
+}
+
 // Tender-specific values that get printed into the generated bid documents.
 // Bidder (company) details are fixed and live in lib/company.ts.
 export interface TenderBidDetails {
@@ -62,6 +71,7 @@ export interface TenderBidDetails {
   signingDate: string
   place: string
   packages: TenderPackage[]
+  technicalComponents: TechnicalComponent[]
   beneficiaryBank: BeneficiaryBank
 }
 

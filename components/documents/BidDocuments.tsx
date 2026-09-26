@@ -1,5 +1,5 @@
 import React from 'react'
-import { CA_FIRM, COMPANY, EXPERIENCE, FINANCIAL_DATA, FINANCIAL_YEARS, MAAT_CR, PROPOSED_COMPONENTS } from '@/lib/company'
+import { CA_FIRM, COMPANY, EXPERIENCE, FINANCIAL_DATA, FINANCIAL_YEARS, MAAT_CR } from '@/lib/company'
 import { DocData } from '@/lib/tender-docs'
 import { A4Page, CELL, DocTitle, FormatTag, HEAD_ROW, SignatureBlock, TABLE } from './primitives'
 
@@ -37,7 +37,7 @@ export function BidDocuments({ doc }: { doc: DocData }) {
         <p className="mb-4">Dear Sir,</p>
         <p className="mb-4 text-justify">
           We, {COMPANY.name} (formerly {COMPANY.formerName}), having read, examined and understood the Request for
-          Selection{doc.corrigendum ? ` and ${doc.corrigendum.split(' dated')[0]}` : ''}, hereby submit our bid, as an
+          Selection{doc.corrigendum ? ` read with ${doc.corrigendum}` : ''}, hereby submit our bid, as an
           individual bidder (single entity), against Packages {doc.packagesLabel}, comprising the Techno-Commercial Bid
           and the Price Bid. We confirm that neither we nor any of our Parent Company / Affiliate has submitted any other
           bid, directly or indirectly, in response to this RfS, and that we are not participating in any consortium under
@@ -284,11 +284,11 @@ export function BidDocuments({ doc }: { doc: DocData }) {
             </tr>
           </thead>
           <tbody>
-            {PROPOSED_COMPONENTS.map((c, i) => (
-              <tr key={c.item}>
+            {doc.technicalComponents.map((c, i) => (
+              <tr key={i}>
                 <td className={CELL}>{i + 1}</td>
                 <td className={CELL}>{c.item}</td>
-                <td className={CELL}>{c.make.replace('{authority}', doc.authority)}</td>
+                <td className={CELL}>{c.make}</td>
                 <td className={CELL}>{c.compliance}</td>
               </tr>
             ))}
