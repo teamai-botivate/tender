@@ -3,13 +3,14 @@
 import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { AlertTriangle, Pencil } from 'lucide-react'
+import { AlertTriangle, Pencil, Sparkles } from 'lucide-react'
 import { useTenders } from '@/context/TenderContext'
 import { Tender } from '@/types/tender'
 import { buildDocData, missingDocFields } from '@/lib/tender-docs'
 import { DocumentCanvas, DocumentToolbar } from '@/components/documents/DocumentToolbar'
 import { DOCUMENT_SECTIONS, TenderDocumentSet } from '@/components/documents/TenderDocumentSet'
 import { TenderModal } from '@/components/modals/TenderModal'
+import { MissingFieldsModal } from '@/components/modals/MissingFieldsModal'
 
 export default function TenderDocumentsPage() {
   const params = useParams<{ id: string }>()
@@ -18,6 +19,7 @@ export default function TenderDocumentsPage() {
   const tender = tenders.find(t => t.id === id)
   const doc = useMemo(() => (tender ? buildDocData(tender) : null), [tender])
   const [editing, setEditing] = useState(false)
+  const [fillingMissing, setFillingMissing] = useState(false)
 
   if (!tender || !doc) {
     return (
@@ -38,6 +40,11 @@ export default function TenderDocumentsPage() {
   const handleSave = (saved: Tender) => {
     updateTender(tender.id, saved)
     setEditing(false)
+  }
+
+  const handleSaveMissing = (saved: Tender) => {
+    updateTender(tender.id, saved)
+    setFillingMissing(false)
   }
 
   return (
@@ -62,9 +69,9 @@ export default function TenderDocumentsPage() {
               <button
                 type="button"
                 className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-800"
-                onClick={() => setEditing(true)}
+                onClick={() => setFillingMissing(true)}
               >
-                <Pencil className="w-3.5 h-3.5" /> Fill these fields now
+                <Sparkles className="w-3.5 h-3.5" /> Fill these fields now
               </button>
             </div>
           </div>
@@ -87,6 +94,15 @@ export default function TenderDocumentsPage() {
 
       {editing && (
         <TenderModal mode="edit" tender={tender} masters={masters} onClose={() => setEditing(false)} onSave={handleSave} />
+      )}
+
+      {fillingMissing && (
+        <MissingFieldsModal
+          tender={tender}
+          missing={missing}
+          onClose={() => setFillingMissing(false)}
+          onSave={handleSaveMissing}
+        />
       )}
     </DocumentCanvas>
   )
