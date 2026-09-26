@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { ArrowRight, FileUp, Loader2, Plus, Sparkles, Trash2, X } from 'lucide-react'
 import { BeneficiaryBank, Masters, Stage, Status, Tender, TenderBidDetails, TenderPackage, TechnicalComponent } from '@/types/tender'
 import { stagesList } from '@/context/TenderContext'
-import { emptyBid } from '@/lib/tender-docs'
+import { emptyBid, missingDocFields } from '@/lib/tender-docs'
 import { TenderExtraction } from '@/lib/tender-extraction-schema'
 
 const isDate = (v: string | null): v is string => !!v && /^\d{4}-\d{2}-\d{2}$/.test(v)
@@ -170,10 +170,9 @@ export function TenderModal({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.title.trim() || !form.authority.trim()) return
+  const [reviewMissing, setReviewMissing] = useState<string[] | null>(null)
 
+  const performSave = () => {
     if (mode === 'process') {
       const isFinal = targetStage === 'Financial Open Check'
       const updatedStatus: Status = isFinal ? 'Completed' : form.status === 'Completed' ? 'Completed' : 'Ready'
@@ -187,7 +186,24 @@ export function TenderModal({
     }
   }
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.title.trim() || !form.authority.trim()) return
+
+    // Before creating/saving, review any document fields that are still empty —
+    // they would otherwise print as blanks in the bid documents unnoticed.
+    if (showBidDetails) {
+      const missing = missingDocFields(form)
+      if (missing.length > 0) {
+        setReviewMissing(missing)
+        return
+      }
+    }
+    performSave()
+  }
+
   return (
+    <>
     <div className="modal-backdrop">
       <div className={showBidDetails ? 'modal modal-wide' : 'modal'}>
         <div className="modal-head">
@@ -560,5 +576,51 @@ export function TenderModal({
         </form>
       </div>
     </div>
+
+    {reviewMissing && (
+      <div className="modal-backdrop" style={{ zIndex: 60 }}>
+        <div className="modal" style={{ width: 'min(480px, 100%)' }}>
+          <div className="modal-head">
+            <div>
+              <p className="eyebrow">REVIEW BEFORE SAVING</p>
+              <h2>Some fields are still empty</h2>
+            </div>
+            <button onClick={() => setReviewMissing(null)} aria-label="Close review">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div style={{ padding: '18px 26px' }}>
+            <p className="text-sm text-slate-600 mb-3">
+              These will print as blanks (<span className="font-mono">__________</span>) in the bid documents:
+            </p>
+            <ul className="list-disc pl-5 text-sm text-amber-800 space-y-1 mb-4">
+              {reviewMissing.map(field => (
+                <li key={field}>{field}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-slate-500">
+              You can go back and fill them now (or upload the tender PDF), or save anyway and fill them later from
+              the tender&apos;s documents page.
+            </p>
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="secondary-button" onClick={() => setReviewMissing(null)}>
+              Go Back & Fill
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => {
+                setReviewMissing(null)
+                performSave()
+              }}
+            >
+              Save Anyway <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
