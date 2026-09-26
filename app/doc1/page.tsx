@@ -12,7 +12,7 @@ export default function Doc1Dashboard() {
     {
       id: 'page2',
       title: 'EMD Bank Guarantees',
-      description: 'Annexure-K EMD/Bid Security Bank Guarantees for Packages P-1 to P-7 (Total Rs. 5.92 Crore).',
+      description: 'Annexure-K EMD/Bid Security Bank Guarantees — one per package, with the total EMD.',
       color: 'bg-blue-500',
       icon: '🏦'
     },
@@ -43,9 +43,14 @@ export default function Doc1Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 py-16 px-4 sm:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight mb-4">CSPDCL Tender Documents</h1>
+          <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight mb-4">Bid Document Templates</h1>
           <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-            Generated documents for ROTOMAG ENERTEC LIMITED. Click on a card to view and print the A4-formatted PDF pages.
+            Blank templates for ROTOMAG ENERTEC LIMITED&apos;s bid documents — every underlined blank fills in
+            automatically once a real tender is created. Open a specific tender&apos;s filled documents from{' '}
+            <a href="/tender-details" className="text-emerald-600 font-semibold hover:underline">
+              Tender Details
+            </a>
+            .
           </p>
         </div>
 

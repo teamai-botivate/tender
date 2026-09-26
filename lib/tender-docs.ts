@@ -31,6 +31,26 @@ export const emptyBid = (): TenderBidDetails => ({
   },
 })
 
+// A tender with every dynamic field left blank. Used by the /doc1 "blank template"
+// preview pages so it's obvious, at a glance, which parts of each document are
+// filled in from the tender form / PDF upload (shown as `__________`) versus the
+// fixed company letterhead details (name, CIN, signatory, ...) that never change.
+export const BLANK_TENDER: Tender = {
+  id: 'BLANK-TEMPLATE',
+  title: '',
+  authority: '',
+  department: '',
+  state: '',
+  value: '',
+  stage: 'Document Ready',
+  status: 'In Progress',
+  due: '',
+  owner: 'Admin',
+  // emptyBid() picks sensible defaults (today's date, 180-day validity, "Anand")
+  // for a brand-new tender form; override those so the preview stays fully blank.
+  bid: { ...emptyBid(), bidValidityDays: '', signingDate: '', place: '' },
+}
+
 // The original CSPDCL tender the document templates were built from.
 // Used by the /doc1 preview pages.
 export const SAMPLE_TENDER: Tender = {
@@ -170,7 +190,10 @@ export type DocData = ReturnType<typeof buildDocData>
 export function buildDocData(tender: Tender) {
   const bid = tender.bid ?? emptyBid()
 
-  const packages: ResolvedPackage[] = bid.packages.map(p => {
+  // Fall back to one blank row so per-package sections (bank guarantees, envelope
+  // labels, ...) still print in the correct shape before any package is added.
+  const hasPackages = bid.packages.length > 0
+  const packages: ResolvedPackage[] = (hasPackages ? bid.packages : [{ code: '', region: '', rfx: '', emdLakh: '' }]).map(p => {
     const emdLakh = toNumber(p.emdLakh)
     const rupees = Math.round(emdLakh * 100000)
     return {
@@ -178,8 +201,8 @@ export function buildDocData(tender: Tender) {
       region: or(p.region),
       rfx: or(p.rfx),
       emdLakh,
-      amountStr: `${rupees.toLocaleString('en-IN')}/-`,
-      amountWords: `${numberToIndianWords(rupees)} only`,
+      amountStr: hasPackages ? `${rupees.toLocaleString('en-IN')}/-` : BLANK,
+      amountWords: hasPackages ? `${numberToIndianWords(rupees)} only` : BLANK,
     }
   })
 
@@ -206,8 +229,8 @@ export function buildDocData(tender: Tender) {
       : BLANK,
     packageCount: packages.length,
     packageRange: packages.length > 1 ? `${packages[0].code} to ${packages[packages.length - 1].code}` : packages[0]?.code ?? BLANK,
-    totalEmdLakh: totalEmdLakh.toFixed(2),
-    totalEmdCrore: (totalEmdLakh / 100).toFixed(2),
+    totalEmdLakh: packages.length ? totalEmdLakh.toFixed(2) : BLANK,
+    totalEmdCrore: packages.length ? (totalEmdLakh / 100).toFixed(2) : BLANK,
     tenderFee: or(bid.tenderFeePerPackage),
     bidValidityDays: or(bid.bidValidityDays),
     financialRequirementCr: bid.financialRequirementCr.trim(),

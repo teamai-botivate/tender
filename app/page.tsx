@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   AlertCircle,
   ArrowRight,
@@ -20,6 +21,7 @@ import { Tender } from '@/types/tender'
 
 export default function DashboardPage() {
   const { tenders, masters, updateTender, deleteTender, advanceStage } = useTenders()
+  const router = useRouter()
   const [modal, setModal] = useState<{ mode: 'edit' | 'process'; tender: Tender } | null>(null)
 
   const activeCount = tenders.length
@@ -30,6 +32,9 @@ export default function DashboardPage() {
   const handleSaveModal = (saved: Tender) => {
     if (modal?.mode === 'edit') {
       updateTender(saved.id, saved)
+      setModal(null)
+      router.push(`/tender-documents/${encodeURIComponent(saved.id)}`)
+      return
     } else if (modal?.mode === 'process') {
       advanceStage(saved.id, saved.stage, saved.status, saved.remarks)
     }

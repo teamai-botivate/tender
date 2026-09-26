@@ -1,20 +1,23 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Pencil } from 'lucide-react'
 import { useTenders } from '@/context/TenderContext'
+import { Tender } from '@/types/tender'
 import { buildDocData, missingDocFields } from '@/lib/tender-docs'
 import { DocumentCanvas, DocumentToolbar } from '@/components/documents/DocumentToolbar'
 import { DOCUMENT_SECTIONS, TenderDocumentSet } from '@/components/documents/TenderDocumentSet'
+import { TenderModal } from '@/components/modals/TenderModal'
 
 export default function TenderDocumentsPage() {
   const params = useParams<{ id: string }>()
   const id = decodeURIComponent(params.id)
-  const { tenders } = useTenders()
+  const { tenders, masters, updateTender } = useTenders()
   const tender = tenders.find(t => t.id === id)
   const doc = useMemo(() => (tender ? buildDocData(tender) : null), [tender])
+  const [editing, setEditing] = useState(false)
 
   if (!tender || !doc) {
     return (
@@ -32,6 +35,11 @@ export default function TenderDocumentsPage() {
 
   const missing = missingDocFields(tender)
 
+  const handleSave = (saved: Tender) => {
+    updateTender(tender.id, saved)
+    setEditing(false)
+  }
+
   return (
     <DocumentCanvas>
       <DocumentToolbar backHref="/tender-details" backLabel="Back to Tenders">
@@ -39,16 +47,25 @@ export default function TenderDocumentsPage() {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{tender.id}</p>
           <p className="text-sm font-semibold text-slate-800 line-clamp-1">{tender.title}</p>
         </div>
+        <button type="button" className="secondary-button text-xs" onClick={() => setEditing(true)}>
+          <Pencil className="w-4 h-4" /> Edit Details
+        </button>
       </DocumentToolbar>
 
       <div className="no-print max-w-[210mm] mx-auto mb-8 space-y-4">
         {missing.length > 0 && (
           <div className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <AlertTriangle className="w-5 h-5 shrink-0" />
-            <div>
+            <div className="flex-1">
               <p className="font-semibold">Some tender details are empty and print as blanks:</p>
               <p className="mt-1">{missing.join(', ')}.</p>
-              <p className="mt-1">Edit the tender (or upload the tender PDF) on the Tender Details page to fill them.</p>
+              <button
+                type="button"
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-800"
+                onClick={() => setEditing(true)}
+              >
+                <Pencil className="w-3.5 h-3.5" /> Fill these fields now
+              </button>
             </div>
           </div>
         )}
@@ -67,6 +84,10 @@ export default function TenderDocumentsPage() {
       </div>
 
       <TenderDocumentSet doc={doc} />
+
+      {editing && (
+        <TenderModal mode="edit" tender={tender} masters={masters} onClose={() => setEditing(false)} onSave={handleSave} />
+      )}
     </DocumentCanvas>
   )
 }

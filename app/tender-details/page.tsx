@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Filter, Plus, Search } from 'lucide-react'
 import { useTenders, stagesList } from '@/context/TenderContext'
 import { TenderTable } from '@/components/tables/TenderTable'
@@ -9,6 +10,7 @@ import { Tender } from '@/types/tender'
 
 export default function TenderDetailsPage() {
   const { tenders, masters, addTender, updateTender, deleteTender, advanceStage } = useTenders()
+  const router = useRouter()
   const [tab, setTab] = useState<'all' | 'pending' | 'completed'>('all')
   const [query, setQuery] = useState('')
   const [stageFilter, setStageFilter] = useState('All stages')
@@ -39,9 +41,15 @@ export default function TenderDetailsPage() {
 
   const handleSaveModal = (saved: Tender) => {
     if (modal?.mode === 'new') {
-      addTender(saved)
+      const id = addTender(saved)
+      setModal(null)
+      router.push(`/tender-documents/${encodeURIComponent(id)}`)
+      return
     } else if (modal?.mode === 'edit' && modal.tender) {
       updateTender(modal.tender.id, saved)
+      setModal(null)
+      router.push(`/tender-documents/${encodeURIComponent(modal.tender.id)}`)
+      return
     } else if (modal?.mode === 'process' && modal.tender) {
       advanceStage(modal.tender.id, saved.stage, saved.status, saved.remarks)
     }

@@ -12,7 +12,7 @@ interface TenderContextType {
   notify: (msg: string) => void
   login: () => void
   logout: () => void
-  addTender: (data: Omit<Tender, 'id'> & { id?: string }) => void
+  addTender: (data: Omit<Tender, 'id'> & { id?: string }) => string
   updateTender: (id: string, data: Partial<Tender>) => void
   deleteTender: (id: string) => void
   advanceStage: (id: string, targetStage?: Stage, targetStatus?: Status, remarks?: string) => void
@@ -127,6 +127,7 @@ export function TenderProvider({ children }: { children: React.ReactNode }) {
     }
     setTenders(prev => [newTender, ...prev])
     notify(`Tender ${generatedId} created successfully`)
+    return generatedId
   }
 
   const updateTender = (id: string, data: Partial<Tender>) => {

@@ -41,3 +41,19 @@ export function DocumentCanvas({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
+
+export function BlankTemplateNotice() {
+  return (
+    <div className="no-print max-w-[210mm] mx-auto mb-8 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+      <p className="font-semibold">This is a blank template.</p>
+      <p className="mt-1">
+        Every <span className="font-mono">__________</span> is a field that fills in automatically from the tender
+        form or an uploaded tender PDF. Open a real tender&apos;s documents from{' '}
+        <Link href="/tender-details" className="underline">
+          Tender Details
+        </Link>{' '}
+        to see them filled in.
+      </p>
+    </div>
+  )
+}

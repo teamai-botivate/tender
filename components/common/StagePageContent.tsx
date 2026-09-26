@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowRight, FileText, Filter, Plus, Search } from 'lucide-react'
 import { Stage, Tender } from '@/types/tender'
 import { stagesList, useTenders } from '@/context/TenderContext'
@@ -20,6 +21,7 @@ export function StagePageContent({
   stageNumber,
 }: StagePageContentProps) {
   const { tenders, masters, updateTender, deleteTender, advanceStage } = useTenders()
+  const router = useRouter()
   const [tab, setTab] = useState<'pending' | 'completed'>('pending')
   const [query, setQuery] = useState('')
   const [modal, setModal] = useState<{ mode: 'edit' | 'process'; tender: Tender } | null>(null)
@@ -48,6 +50,9 @@ export function StagePageContent({
   const handleSaveModal = (saved: Tender) => {
     if (modal?.mode === 'edit') {
       updateTender(saved.id, saved)
+      setModal(null)
+      router.push(`/tender-documents/${encodeURIComponent(saved.id)}`)
+      return
     } else if (modal?.mode === 'process') {
       advanceStage(saved.id, saved.stage, saved.status, saved.remarks)
     }
